@@ -13,6 +13,7 @@
   var sceneListToggleElement = document.querySelector('#sceneListToggle');
   var autorotateToggleElement = document.querySelector('#autorotateToggle');
   var fullscreenToggleElement = document.querySelector('#fullscreenToggle');
+  var heightToggleElement = document.querySelector('#heightToggle');
 
   if (window.matchMedia) {
     var setMode = function() {
