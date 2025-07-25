@@ -146,6 +146,8 @@ if (data.imageHotspots) {
 
   sceneListToggleElement.addEventListener('click', toggleSceneList);
 
+
+
   if (!document.body.classList.contains('mobile')) {
     showSceneList();
   }
