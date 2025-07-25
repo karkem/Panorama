@@ -129,6 +129,19 @@ if (data.imageHotspots) {
 
   autorotateToggleElement.addEventListener('click', toggleAutorotate);
 
+  // Add this after the autorotate toggle setup
+  heightToggleElement.addEventListener('click', function() {
+    var isElevated = this.classList.contains('elevated');
+    
+    if (isElevated) {
+      this.classList.remove('elevated');
+      switchScene(heightScenes.ground);
+    } else {
+      this.classList.add('elevated');
+      switchScene(heightScenes.elevated);
+    }
+  });
+
   if (screenfull.enabled && data.settings.fullscreenButton) {
     document.body.classList.add('fullscreen-enabled');
     fullscreenToggleElement.addEventListener('click', function() {
@@ -186,13 +199,22 @@ if (data.imageHotspots) {
   }
 
   function switchScene(scene) {
-    stopAutorotate();
-    scene.view.setParameters(scene.data.initialViewParameters);
-    scene.scene.switchTo();
-    startAutorotate();
-    updateSceneName(scene);
-    updateSceneList(scene);
+  stopAutorotate();
+  scene.view.setParameters(scene.data.initialViewParameters);
+  scene.scene.switchTo();
+  startAutorotate();
+  updateSceneName(scene);
+  updateSceneList(scene);
+  
+  // Update height toggle state
+  if (scene === heightScenes.elevated) {
+    heightToggleElement.classList.add('elevated');
+  } else {
+    heightToggleElement.classList.remove('elevated');
   }
+}
+
+  
 
   function updateSceneName(scene) {
     sceneNameElement.innerHTML = sanitize(scene.data.name);
@@ -402,9 +424,12 @@ function addSmartHotspot(scene, yaw, pitch, imageUrl = "", scale = 1.0, tilt = 0
   scene.hotspotContainer().createHotspot(container, { yaw, pitch });
 }
 
-
-
   // Start with the first scene
   switchScene(scenes[0]);
+
+var heightScenes = {
+  ground: scenes[0],
+  elevated: scenes[1]
+};
 
 })();
