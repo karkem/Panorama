@@ -69,22 +69,7 @@
       console.log(`Pitch: ${params.pitch.toFixed(4)} rad (${pitchDeg}°)`);
       console.log(`FOV: ${params.fov.toFixed(4)} rad`);
       
-      // Show visual feedback
-      var marker = document.createElement('div');
-      marker.style.cssText = `
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        background: red;
-        border-radius: 50%;
-        pointer-events: none;
-        transform: translate(-50%, -50%);
-        left: ${event.clientX}px;
-        top: ${event.clientY}px;
-        z-index: 10000;
-      `;
-      document.body.appendChild(marker);
-      setTimeout(() => marker.remove(), 1000);
+      // Visual feedback code has been removed here
     }
   });
 
