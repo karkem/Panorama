@@ -18,14 +18,7 @@
   var heightToggleElement = document.querySelector('#heightToggle');
   var addHotspotBtn = document.getElementById('addHotspotBtn');
   var imagePicker = document.getElementById('imagePicker');
-  
-  // Position the Add Hotspot button above navigation controls
-  if (addHotspotBtn) {
-    addHotspotBtn.style.position = 'absolute';
-    addHotspotBtn.style.bottom = '100px'; // Position above navigation controls
-    addHotspotBtn.style.left = '10px';
-    addHotspotBtn.style.zIndex = '10';
-  }
+
 
   // Initialize view position storage
   var lastViewPositions = {};
