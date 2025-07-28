@@ -6,19 +6,31 @@
   var screenfull = window.screenfull;
   var data = window.APP_DATA;
   var currentScene = null;
+  let isAddingHotspot = false;
 
+  // Get DOM elements
   var panoElement = document.querySelector('#pano');
   var sceneNameElement = document.querySelector('#titleBar .sceneName');
   var sceneListElement = document.querySelector('#sceneList');
-  var sceneElements = document.querySelectorAll('#sceneList .scene');
   var sceneListToggleElement = document.querySelector('#sceneListToggle');
   var autorotateToggleElement = document.querySelector('#autorotateToggle');
   var fullscreenToggleElement = document.querySelector('#fullscreenToggle');
   var heightToggleElement = document.querySelector('#heightToggle');
+  var addHotspotBtn = document.getElementById('addHotspotBtn');
+  var imagePicker = document.getElementById('imagePicker');
+  
+  // Position the Add Hotspot button above navigation controls
+  if (addHotspotBtn) {
+    addHotspotBtn.style.position = 'absolute';
+    addHotspotBtn.style.bottom = '100px'; // Position above navigation controls
+    addHotspotBtn.style.left = '10px';
+    addHotspotBtn.style.zIndex = '10';
+  }
 
   // Initialize view position storage
   var lastViewPositions = {};
 
+  // Responsive mode detection
   if (window.matchMedia) {
     var setMode = function() {
       if (mql.matches) {
@@ -36,16 +48,19 @@
     document.body.classList.add('desktop');
   }
 
+  // Touch detection
   document.body.classList.add('no-touch');
   window.addEventListener('touchstart', function() {
     document.body.classList.remove('no-touch');
     document.body.classList.add('touch');
   });
 
+  // IE fallback
   if (bowser.msie && parseFloat(bowser.version) < 11) {
     document.body.classList.add('tooltip-fallback');
   }
 
+  // Viewer setup
   var viewerOpts = {
     controls: {
       mouseViewMode: data.settings.mouseViewMode
@@ -54,33 +69,16 @@
 
   var viewer = new Marzipano.Viewer(panoElement, viewerOpts);
 
-panoElement.addEventListener('click', function(e) {
-  const view = viewer.view();
-  const rect = panoElement.getBoundingClientRect();
-
-  const x = (e.clientX - rect.left) / rect.width;
-  const y = (e.clientY - rect.top) / rect.height;
-
-  const coords = view.screenToCoordinates({ x: x, y: y });
-
-  const yawDeg = (coords.yaw * 180 / Math.PI).toFixed(2);
-  const pitchDeg = (coords.pitch * 180 / Math.PI).toFixed(2);
-
-  console.log("Clicked position:");
-  console.log(`Yaw: ${coords.yaw.toFixed(4)} rad (${yawDeg}°)`);
-  console.log(`Pitch: ${coords.pitch.toFixed(4)} rad (${pitchDeg}°)`);
-});
-
-
-  var scenes = data.scenes.map(function(data) {
+  // Create scenes
+  var scenes = data.scenes.map(function(sceneData) {
     var urlPrefix = "tiles";
     var source = Marzipano.ImageUrlSource.fromString(
-      urlPrefix + "/" + data.id + "/{z}/{f}/{y}/{x}.jpg",
-      { cubeMapPreviewUrl: urlPrefix + "/" + data.id + "/preview.jpg" });
-    var geometry = new Marzipano.CubeGeometry(data.levels);
+      urlPrefix + "/" + sceneData.id + "/{z}/{f}/{y}/{x}.jpg",
+      { cubeMapPreviewUrl: urlPrefix + "/" + sceneData.id + "/preview.jpg" });
+    var geometry = new Marzipano.CubeGeometry(sceneData.levels);
 
-    var limiter = Marzipano.RectilinearView.limit.traditional(data.faceSize, 100*Math.PI/180, 120*Math.PI/180);
-    var view = new Marzipano.RectilinearView(data.initialViewParameters, limiter);
+    var limiter = Marzipano.RectilinearView.limit.traditional(sceneData.faceSize, 100*Math.PI/180, 120*Math.PI/180);
+    var view = new Marzipano.RectilinearView(sceneData.initialViewParameters, limiter);
 
     var scene = viewer.createScene({
       source: source,
@@ -89,70 +87,71 @@ panoElement.addEventListener('click', function(e) {
       pinFirstLevel: true
     });
 
-    data.linkHotspots.forEach(function(hotspot) {
+    // Create hotspots
+    sceneData.linkHotspots.forEach(function(hotspot) {
       var element = createLinkHotspotElement(hotspot);
       scene.hotspotContainer().createHotspot(element, { yaw: hotspot.yaw, pitch: hotspot.pitch });
     });
 
-    data.infoHotspots.forEach(function(hotspot) {
+    sceneData.infoHotspots.forEach(function(hotspot) {
       var element = createInfoHotspotElement(hotspot);
       scene.hotspotContainer().createHotspot(element, { yaw: hotspot.yaw, pitch: hotspot.pitch });
     });
 
-    // Add imageHotspots
-    if (data.imageHotspots) {
-      data.imageHotspots.forEach(function(hs) {
+    // Create image hotspots
+    if (sceneData.imageHotspots) {
+      sceneData.imageHotspots.forEach(function(hs) {
         addSmartHotspot(
           scene, 
           hs.yaw, 
           hs.pitch, 
           hs.image || "", 
           hs.scale || 1.0, 
-          hs.tilt || -45,
-          hs.color || "rgba(255, 255, 255, 0.5)"  // Added color support
+          hs.tilt || 0,
+          "rgba(255, 255, 255, 0.5)"
         );
       });
     }
 
-    if (data.smartHotspots) {
-      data.smartHotspots.forEach(function(h) {
-        addSmartHotspot(scene, h.yaw, h.pitch, h.imageUrl, h.scale, h.angle);
-      });
-    }
-
     return {
-      data: data,
+      data: sceneData,
       scene: scene,
       view: view
     };
   });
 
-  // FIXED: Define heightScenes using the scenes array instead of APP_DATA.scenes
+  // Setup height scenes
   var heightScenes = {
     ground: scenes.find(s => s.data.id === "100m_agl"),
     elevated: scenes.find(s => s.data.id === "225m_agl")
   };
 
+  // Autorotate setup
   var autorotate = Marzipano.autorotate({
     yawSpeed: 0.03,
     targetPitch: 0,
     targetFov: Math.PI/2
   });
+  
   if (data.settings.autorotateEnabled) {
     autorotateToggleElement.classList.add('enabled');
   }
 
+  // Event listeners
   autorotateToggleElement.addEventListener('click', toggleAutorotate);
 
-  // Add height toggle functionality with null check
+  // Height toggle
   if (heightToggleElement) {
     heightToggleElement.addEventListener('click', function() {
       var isElevated = this.classList.contains('elevated');
       var targetScene = isElevated ? heightScenes.ground : heightScenes.elevated;
-      switchScene(targetScene);
+      if (targetScene) {
+        switchScene(targetScene);
+      }
     });
   }
 
+  // Fullscreen toggle
   if (screenfull.enabled && data.settings.fullscreenButton) {
     document.body.classList.add('fullscreen-enabled');
     fullscreenToggleElement.addEventListener('click', function() {
@@ -171,12 +170,15 @@ panoElement.addEventListener('click', function(e) {
 
   sceneListToggleElement.addEventListener('click', toggleSceneList);
 
+  // Show scene list on desktop
   if (!document.body.classList.contains('mobile')) {
     showSceneList();
   }
 
+  // Scene selection
+  var sceneLinks = document.querySelectorAll('#sceneList .scene');
   scenes.forEach(function(scene) {
-    var el = document.querySelector('#sceneList .scene[data-id="' + scene.data.id + '"]');
+    var el = Array.from(sceneLinks).find(link => link.getAttribute('data-id') === scene.data.id);
     if (el) {
       el.addEventListener('click', function() {
         switchScene(scene);
@@ -187,6 +189,7 @@ panoElement.addEventListener('click', function(e) {
     }
   });
 
+  // Navigation controls
   var viewUpElement = document.querySelector('#viewUp');
   var viewDownElement = document.querySelector('#viewDown');
   var viewLeftElement = document.querySelector('#viewLeft');
@@ -205,47 +208,49 @@ panoElement.addEventListener('click', function(e) {
   if (viewInElement) controls.registerMethod('inElement',    new Marzipano.ElementPressControlMethod(viewInElement,  'zoom', -velocity, friction), true);
   if (viewOutElement) controls.registerMethod('outElement',   new Marzipano.ElementPressControlMethod(viewOutElement, 'zoom',  velocity, friction), true);
 
+  // Utility functions
   function sanitize(s) {
     return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
   }
 
   function switchScene(scene) {
-  // Save current view parameters
-  if (currentScene) {
-    var currentSceneId = currentScene.data.id;
-    lastViewPositions[currentSceneId] = currentScene.view.parameters();
-  }
+    // Save current view parameters
+    if (currentScene) {
+      var currentSceneId = currentScene.data.id;
+      lastViewPositions[currentSceneId] = currentScene.view.parameters();
+    }
 
-  stopAutorotate();
+    stopAutorotate();
 
-  // Restore saved view or use initial parameters
-  var viewParams = lastViewPositions[scene.data.id] || scene.data.initialViewParameters;
-  scene.view.setParameters(viewParams);
+    // Restore saved view or use initial parameters
+    var viewParams = lastViewPositions[scene.data.id] || scene.data.initialViewParameters;
+    scene.view.setParameters(viewParams);
 
-  scene.scene.switchTo();
-  currentScene = scene;  // Track the active scene
+    scene.scene.switchTo();
+    currentScene = scene;
 
-  startAutorotate();
-  updateSceneName(scene);
-  updateSceneList(scene);
+    startAutorotate();
+    updateSceneName(scene);
+    updateSceneList(scene);
 
-  if (heightToggleElement) {
-    if (scene === heightScenes.elevated) {
-      heightToggleElement.classList.add('elevated');
-    } else {
-      heightToggleElement.classList.remove('elevated');
+    // Update height toggle state
+    if (heightToggleElement) {
+      if (scene === heightScenes.elevated) {
+        heightToggleElement.classList.add('elevated');
+      } else {
+        heightToggleElement.classList.remove('elevated');
+      }
     }
   }
-}
-
 
   function updateSceneName(scene) {
     sceneNameElement.innerHTML = sanitize(scene.data.name);
   }
 
   function updateSceneList(scene) {
-    for (var i = 0; i < sceneElements.length; i++) {
-      var el = sceneElements[i];
+    var sceneLinks = document.querySelectorAll('#sceneList .scene');
+    for (var i = 0; i < sceneLinks.length; i++) {
+      var el = sceneLinks[i];
       if (el.getAttribute('data-id') === scene.data.id) {
         el.classList.add('current');
       } else {
@@ -404,36 +409,117 @@ panoElement.addEventListener('click', function(e) {
     return null;
   }
 
+  // Hotspot creation functionality
+  if (addHotspotBtn) {
+    addHotspotBtn.addEventListener('click', function() {
+      if (!currentScene) return;
+      isAddingHotspot = !isAddingHotspot;
+      if (isAddingHotspot) {
+        alert("Click on the panorama where you want to add a hotspot.");
+      } else {
+        alert("Hotspot adding cancelled.");
+      }
+    });
+  }
+
+  // Handle panorama clicks for hotspot creation
+panoElement.addEventListener('click', function(event) {
+  if (!isAddingHotspot || !currentScene) return;
+
+  const rect = panoElement.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  
+    try {
+      const coords = currentScene.view.screenToCoordinates({ x, y });
+      if (!coords) {
+        alert("Invalid click location.");
+        return;
+      }
+
+      // Trigger file picker
+      imagePicker.click();
+      
+      imagePicker.onchange = function() {
+        const file = imagePicker.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const scale = prompt("Scale (e.g., 0.5):", "0.5");
+          const tilt = prompt("Tilt (degrees, 0=circle, 90=flat):", "60");
+          
+          if (!scale || !tilt) {
+            isAddingHotspot = false;
+            return;
+          }
+          
+          // Add to current scene
+          addSmartHotspot(
+            currentScene.scene, 
+            coords.yaw, 
+            coords.pitch, 
+            e.target.result, 
+            parseFloat(scale), 
+            parseFloat(tilt),
+            "rgba(255, 255, 255, 0.5)"
+          );
+          
+          // Output config for data.js
+          console.log(`
+{
+  yaw: ${coords.yaw.toFixed(4)},
+  pitch: ${coords.pitch.toFixed(4)},
+  image: "img/${file.name}", // Save this image to your project
+  scale: ${scale},
+  tilt: ${tilt}
+},`);
+          alert("✅ Hotspot added! Copy the config to your data.js file");
+          isAddingHotspot = false;
+        };
+        reader.readAsDataURL(file);
+      };
+    } catch (error) {
+      console.error("Error adding hotspot:", error);
+      isAddingHotspot = false;
+    }
+  });
+
   function addSmartHotspot(scene, yaw, pitch, imageUrl = "", scale = 1.0, tilt = 0, color = "rgba(255, 255, 255, 0.5)") {
     // Create container
     const container = document.createElement("div");
     container.className = "smart-hotspot-container";
     container.style.width = `${50 * scale}px`;
     container.style.height = `${50 * scale}px`;
-    
+    container.style.cursor = "pointer";
+  
     // Create visual element
     const visual = document.createElement("div");
     visual.className = "smart-hotspot-visual";
-    
+  
     // Apply transformations and color
     const scaleY = Math.cos((tilt * Math.PI) / 180);
     visual.style.transform = `scaleY(${scaleY})`;
     visual.style.backgroundColor = color;
-    
-    container.appendChild(visual);
-    
-    // Add click handler
+    visual.style.borderRadius = "50%";
+    visual.style.overflow = "hidden";
+    visual.style.display = "flex";
+    visual.style.alignItems = "center";
+    visual.style.justifyContent = "center";
+  
+    // Do NOT add image element here!
+    // Only set up click to open popup if imageUrl is provided
     if (imageUrl) {
       container.onclick = function() {
         document.getElementById("popup-img").src = imageUrl;
         document.getElementById("popup-frame").style.display = "block";
       };
     }
-
+  
+    container.appendChild(visual);
     scene.hotspotContainer().createHotspot(container, { yaw, pitch });
   }
 
-  // Start with the first scene
-  switchScene(scenes[0]);
-
+  // Start with the first scene (100m_agl)
+  switchScene(scenes.find(s => s.data.id === "100m_agl") || scenes[0]);
 })();

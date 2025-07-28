@@ -89,15 +89,15 @@ var APP_DATA = {
         "scale": 0.3,
         "tilt": 70   // 0 = circle, 90 = flat line
         },
-
-                {
         
-        "yaw": -2.1348, 
-        "pitch": -0.2139,
-        "image": "img/Glacier_lake2.JPG",
-        "scale": 0.3,
-        "tilt": 70   // 0 = circle, 90 = flat line
-        }
+        {
+        yaw: -1.5363,
+        pitch: 0.4409,
+        image: "img/Glacier_lake2.JPG", // Save this image to your project
+        scale: 0.5,
+        tilt: 60
+        },
+
       ]
     },
 
