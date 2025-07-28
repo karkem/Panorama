@@ -67,8 +67,8 @@ var APP_DATA = {
         },
 
        {
-        "yaw": -1.21,
-        "pitch": 0.23,
+        "yaw": -2.0351, 
+        "pitch": -0.2050,
         "image": "img/Wetland2.jpg",
         "scale": 0.3,
         "tilt": 60   // 0 = circle, 90 = flat line
@@ -91,15 +91,13 @@ var APP_DATA = {
         },
 
                 {
-        "yaw": -1.56,
-        "pitch": 0.35,
+        
+        "yaw": -2.1348, 
+        "pitch": -0.2139,
         "image": "img/Glacier_lake2.JPG",
         "scale": 0.3,
         "tilt": 70   // 0 = circle, 90 = flat line
         }
-
-        
-
       ]
     },
 

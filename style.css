@@ -974,3 +974,18 @@ body.view-control-buttons .viewControlButton {
 #heightToggle.elevated .icon.elevated-view {
   display: block;
 }
+
+#center-marker {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin-left: -10px;
+      margin-top: -10px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.6);
+      border: 2px solid rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+      z-index: 9999;
+}

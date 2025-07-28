@@ -54,33 +54,23 @@
 
   var viewer = new Marzipano.Viewer(panoElement, viewerOpts);
 
-  // Replace the existing click event handler with this:
-  panoElement.addEventListener('click', function(event) {
-    if (!event.target.closest('.hotspot')) {
-      // Get click position relative to panorama element
-      var rect = panoElement.getBoundingClientRect();
-      var x = event.clientX - rect.left;
-      var y = event.clientY - rect.top;
-      
-      // Convert to normalized screen coordinates (0-1 range)
-      var screenX = x / rect.width;
-      var screenY = y / rect.height;
-      
-      // Convert screen position to view coordinates
-      var view = viewer.view();
-      var coordinates = view.screenToCoordinates({x: screenX, y: screenY});
-      
-      // Convert to degrees
-      var yawDeg = (coordinates.yaw * 180/Math.PI).toFixed(2);
-      var pitchDeg = (coordinates.pitch * 180/Math.PI).toFixed(2);
-      
-      console.log("Clicked coordinates:");
-      console.log(`Yaw: ${coordinates.yaw.toFixed(4)} rad (${yawDeg}°)`);
-      console.log(`Pitch: ${coordinates.pitch.toFixed(4)} rad (${pitchDeg}°)`);
-      
-      // Red dot visualization has been removed
-    }
-  });
+panoElement.addEventListener('click', function(e) {
+  const view = viewer.view();
+  const rect = panoElement.getBoundingClientRect();
+
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+
+  const coords = view.screenToCoordinates({ x: x, y: y });
+
+  const yawDeg = (coords.yaw * 180 / Math.PI).toFixed(2);
+  const pitchDeg = (coords.pitch * 180 / Math.PI).toFixed(2);
+
+  console.log("Clicked position:");
+  console.log(`Yaw: ${coords.yaw.toFixed(4)} rad (${yawDeg}°)`);
+  console.log(`Pitch: ${coords.pitch.toFixed(4)} rad (${pitchDeg}°)`);
+});
+
 
   var scenes = data.scenes.map(function(data) {
     var urlPrefix = "tiles";
