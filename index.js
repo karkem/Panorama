@@ -514,5 +514,5 @@ panoElement.addEventListener('click', function(event) {
   }
 
   // Start with the first scene (100m_agl)
-  switchScene(scenes.find(s => s.data.id === "100m_agl") || scenes[0]);
+  switchScene(scenes.find(s => s.data.id === "225m_agl") || scenes[0]);
 })();
