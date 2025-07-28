@@ -27,27 +27,25 @@
 
 <div id="titleBar">
   <h1 class="sceneName"></h1>
+  <button id="addHotspotBtn">Add Image Hotspot</button>
+  <input type="file" id="imagePicker" accept="image/*" style="display:none" />
+  <a href="javascript:void(0)" id="autorotateToggle">
+    <img class="icon off" src="img/play.png">
+    <img class="icon on" src="img/pause.png">
+  </a>
+  <a href="javascript:void(0)" id="fullscreenToggle">
+    <img class="icon off" src="img/fullscreen.png">
+    <img class="icon on" src="img/windowed.png">
+  </a>
+  <a href="javascript:void(0)" id="heightToggle">
+    <img class="icon ground-level" src="img/ground-icon.png">
+    <img class="icon elevated-view" src="img/elevated-icon.png">
+  </a>
+  <a href="javascript:void(0)" id="sceneListToggle">
+    <img class="icon off" src="img/expand.png">
+    <img class="icon on" src="img/collapse.png">
+  </a>
 </div>
-
-<a href="javascript:void(0)" id="autorotateToggle">
-  <img class="icon off" src="img/play.png">
-  <img class="icon on" src="img/pause.png">
-</a>
-
-<a href="javascript:void(0)" id="fullscreenToggle">
-  <img class="icon off" src="img/fullscreen.png">
-  <img class="icon on" src="img/windowed.png">
-</a>
-
-<a href="javascript:void(0)" id="heightToggle">
-  <img class="icon ground-level" src="img/ground-icon.png">
-  <img class="icon elevated-view" src="img/elevated-icon.png">
-</a>
-
-<a href="javascript:void(0)" id="sceneListToggle">
-  <img class="icon off" src="img/expand.png">
-  <img class="icon on" src="img/collapse.png">
-</a>
 
 <a href="javascript:void(0)" id="viewUp" class="viewControlButton viewControlButton-1">
   <img class="icon" src="img/up.png">
@@ -83,6 +81,6 @@
     <button onclick="document.getElementById('popup-frame').style.display='none'">Close</button>
   </div>
 </div>
-<div id="center-marker"></div>
+<!--div id="center-marker"></div> -->
 </body>
 </html>
